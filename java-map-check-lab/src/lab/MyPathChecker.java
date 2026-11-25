@@ -19,11 +19,45 @@ public final class MyPathChecker implements PathChecker {
         // 设计逻辑，一条path有四个属性xmin，xmax，ymin，ymax，记录为在xy象限的投影范围
         // 先构建四个二维数组[n,xnmin],[n,ynmin]..按照第二位顺序排序，for(1->n)=>二分查找找到可能冲突的站点，记录为二维数组
         // 二维数组用双层循环再进行真实冲突站点
-        // 若不可能
+        
+        List<Double> xminMap = new ArrayList<>();
+        List<Double> xmaxMap = new ArrayList<>();
+        List<Double> yminMap = new ArrayList<>();
+        List<Double> ymaxMap = new ArrayList<>();
+
+        // 把path属性存入四个数组 
+        for (int i = 0; i < paths.size(); i++) {
+            MapPath mapPath = paths.get(i);
+   
+            if(mapPath.from().x() >= mapPath.to().x()){
+                xminMap.add(i, mapPath.to().x());
+                xmaxMap.add(i, mapPath.from().x());
+            }else{
+                xminMap.add(i, mapPath.from().x());
+                xmaxMap.add(i, mapPath.to().x());
+            }
+
+            if(mapPath.from().y() >= mapPath.to().y()){
+                yminMap.add(i, mapPath.to().y());
+                ymaxMap.add(i, mapPath.from().y());
+            }else{
+                yminMap.add(i, mapPath.from().y());
+                ymaxMap.add(i, mapPath.to().y());
+            }
+        }
+
         for (int i = 0; i < paths.size(); i++) {
             for (int j = i + 1; j < paths.size(); j++) {
+                if (xmaxMap.get(i) + 0.03 < xminMap.get(j)
+                        || xmaxMap.get(j) + 0.03 < xminMap.get(i)
+                        || ymaxMap.get(i) + 0.03 < yminMap.get(j)
+                        || ymaxMap.get(j) + 0.03 < yminMap.get(i)) {
+                    continue;
+                }
+
                 MapPath first = paths.get(i);
                 MapPath second = paths.get(j);
+
 
                 // 注意：这里必须统计 Geometry.conflicts 的实际调用次数。
                 exactChecks++;
